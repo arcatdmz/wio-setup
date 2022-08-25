@@ -8,7 +8,6 @@ const API_NODES_CREATE = '/v1/nodes/create';
 const API_NODES_LIST = '/v1/nodes/list';
 const API_NODES_RENAME = '/v1/nodes/rename';
 const OTA_INTERNATIONAL_URL = 'https://us.wio.seeed.io';
-const SERVER_LOGIN = 'https://wio.seeed.io/login';
 
 const AP_IP = '192.168.4.1';
 const AP_PORT = 1025;
@@ -55,12 +54,10 @@ export default class WioSetup {
         email: this.params.user.email,
         password: this.params.user.password,
       };
-      return axios.post(`${SERVER_LOGIN}`, querystring.stringify(body))
+      return axios.post(`${this.params.user.server}/v1/user/login`, querystring.stringify(body))
       .then((result) => {
-        const re = /^token: ([^ ]+)$/;
-        const response = (result.data.split(/\n/).filter(l => re.test(l)).map(l => l.replace(re, '$1')));
-        if (response.length === 1) {
-          this.params.user.token = response[0];
+        if (result.data.token) {
+          this.params.user.token = result.data.token;
           return result.data;
         }
         return Promise.reject('login failed');
